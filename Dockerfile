@@ -18,10 +18,6 @@ ENV NODE_ENV="production"
 
 RUN pnpm turbo run build --filter=@snailycad/api
 
-WORKDIR /snailycad/apps/api
-
-CMD ["pnpm", "start"]
-
 FROM deps as client
 
 ENV NODE_ENV="production"
@@ -32,6 +28,14 @@ RUN pnpm create-images-domain
 
 RUN pnpm turbo run build --filter=@snailycad/client
 
-WORKDIR /snailycad/apps/client
+# Copy the start script into the container
+COPY start.sh /snailycad/start.sh
 
-CMD ["pnpm", "start"]
+# Make the start script executable
+RUN chmod +x /snailycad/start.sh
+
+# Set the working directory to the root of the project
+WORKDIR /snailycad
+
+# Use the start script to start both services
+CMD ["/snailycad/start.sh"]
